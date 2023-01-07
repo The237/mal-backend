@@ -54,6 +54,11 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.JSON,
       allowNull: false,
     },
+    deleted: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      default: false,
+    },
   });
   User.associate = function (models) {
     User.hasMany(models.house);

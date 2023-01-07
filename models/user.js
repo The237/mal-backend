@@ -38,7 +38,7 @@ module.exports = (sequelize, Sequelize) => {
         msg: "Email adress already in use !",
       },
     },
-    adress: {
+    adresse: {
       type: Sequelize.STRING,
       allowNull: false,
       validate: {

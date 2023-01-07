@@ -1,3 +1,4 @@
+const { max } = require("underscore");
 const { Sequelize, sequelize } = require(".");
 
 module.exports = (sequelize, Sequelize) => {
@@ -33,22 +34,41 @@ module.exports = (sequelize, Sequelize) => {
     prix: {
       type: Sequelize.BIGINT,
       allowNull: false,
+      validate: {
+        min: 5000,
+      },
     },
     parking: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+    },
+    cloture: {
+      type: Sequelize.BOOLEAN,
       allowNull: false,
     },
     region: {
-      type: Sequelize.STRING,
+      type: Sequelize.INTEGER,
       allowNull: false,
+      validate: {
+        min: 1,
+        max: 10,
+      },
     },
     departement: {
-      type: Sequelize.STRING,
+      type: Sequelize.INTEGER,
       allowNull: false,
+      validate: {
+        min: 1,
+        max: 58,
+      },
     },
     arrondissement: {
-      type: Sequelize.STRING,
+      type: Sequelize.INTEGER,
       allowNull: false,
+      validate: {
+        min: 1,
+        max: 361,
+      },
     },
     quartier: {
       type: Sequelize.STRING,
@@ -58,13 +78,12 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
       allowNull: true,
     },
-    cloture: {
-      type: Sequelize.INTEGER,
-      allowNull: false,
-    },
     nbMoisDde: {
       type: Sequelize.INTEGER,
       allowNull: false,
+      validate: {
+        min: 1,
+      },
     },
     images: {
       type: Sequelize.JSON,
@@ -73,6 +92,11 @@ module.exports = (sequelize, Sequelize) => {
     pieces: {
       type: Sequelize.JSON,
       allowNull: false,
+    },
+    deleted: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      default: false,
     },
   });
   House.associate = function (models) {

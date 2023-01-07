@@ -3,29 +3,10 @@ const { sequelize } = require("../models");
 const users = express.Router();
 const usersServices = sequelize.models["user"];
 const Joi = require("joi");
+const customJoiJson = require("../consts/customJoiJson");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const user = require("../models/user");
 require("dotenv").config();
-
-const custom = Joi.extend({
-  type: "array",
-  base: Joi.array(),
-  coerce: {
-    from: "string",
-    method(value, helpers) {
-      if (
-        typeof value !== "string" ||
-        (value[0] !== "[" && !/^\s*\[/.test(value))
-      ) {
-        return;
-      }
-      try {
-        return { value: JSON.parse(value) };
-      } catch (ignoreErr) {}
-    },
-  },
-});
 
 users.get("/users", async (req, res) => {
   try {
@@ -48,7 +29,7 @@ users.post("/user/signin", async (req, res) => {
       })
       .required(),
     email: Joi.string().email().required(),
-    adress: Joi.string().required(),
+    adresse: Joi.string().required(),
     password: Joi.string()
       .pattern(new RegExp("^(?=.*d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$"))
       .required()
@@ -63,9 +44,9 @@ users.post("/user/signin", async (req, res) => {
       "an.only": `Les mots de passe sont differents`,
       "any.required": `Veuillez de nouveau saisir le mot de passe`,
     }),
-    roles: custom.array().when("infected", {
+    roles: customJoiJson.array().when("infected", {
       is: true,
-      then: custom.array().min(1).required(),
+      then: customJoiJson.array().min(1).required(),
     }),
     deleted: Joi.boolean(),
   });
@@ -91,7 +72,7 @@ users.post("/user/signin", async (req, res) => {
       sexe,
       telephone,
       email,
-      adress,
+      adresse,
       password,
       roles,
       deleted,
@@ -102,7 +83,7 @@ users.post("/user/signin", async (req, res) => {
       sexe: sexe,
       telephone: telephone,
       email: email,
-      adress: adress,
+      adresse: adresse,
       password: password,
       roles: roles,
       deleted: deleted,
@@ -122,7 +103,7 @@ users.post("/user/signin", async (req, res) => {
         sexe: user.sexe,
         telephone: user.telephone,
         email: user.email,
-        adress: user.adress,
+        adresse: user.adresse,
         roles: user.roles,
         deleted: deleted,
       },
@@ -156,10 +137,10 @@ users.put("/user/:id", async (req, res) => {
       })
       .required(),
     email: Joi.string().email().required(),
-    adress: Joi.string().required(),
-    roles: custom.array().when("infected", {
+    adresse: Joi.string().required(),
+    roles: customJoiJson.array().when("infected", {
       is: true,
-      then: custom.array().min(1).required(),
+      then: customJoiJson.array().min(1).required(),
     }),
   });
 
@@ -175,7 +156,7 @@ users.put("/user/:id", async (req, res) => {
       sexe,
       telephone,
       email,
-      adress,
+      adresse,
       password,
       roles,
       deleted,
@@ -188,7 +169,7 @@ users.put("/user/:id", async (req, res) => {
         sexe: sexe,
         telephone: telephone,
         email: email,
-        adress: adress,
+        adresse: adresse,
         password: password,
         roles: roles,
         deleted: deleted,

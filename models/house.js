@@ -38,6 +38,26 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       allowNull: false,
     },
+    region: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    departement: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    arrondissement: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    quartier: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    lieuDit: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
     cloture: {
       type: Sequelize.INTEGER,
       allowNull: false,
@@ -56,7 +76,7 @@ module.exports = (sequelize, Sequelize) => {
     },
   });
   House.associate = function (models) {
-    House.belongsTo(models.proprietary);
+    House.belongsTo(models.user);
   };
   return House;
 };

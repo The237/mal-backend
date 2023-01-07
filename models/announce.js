@@ -7,7 +7,7 @@ module.exports = (sequelize, Sequelize) => {
     },
   });
   Announce.associate = function (models) {
-    Announce.belongsTo(models.proprietary);
+    Announce.belongsTo(models.user);
   };
   return Announce;
 };

@@ -1,9 +1,9 @@
 const { Sequelize, sequelize } = require(".");
 
-const phoneValidatorRegex = /(^222\d{6}$|^6[5-9]{1}\d{7}$)/;
+const phoneValidatorRegex = /[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-s./0-9]*$/;
 
 module.exports = (sequelize, Sequelize) => {
-  const Proprietary = sequelize.define("proprietary", {
+  const User = sequelize.define("user", {
     nom: {
       type: Sequelize.STRING,
       allowNull: false,
@@ -26,13 +26,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     telephone: {
       type: Sequelize.STRING,
-      validate: {
-        min: 9,
-        max: 9,
-        validator: function (v) {
-          return phoneValidatorRegex.test(v);
-        },
-      },
+      allowNull: false,
     },
     email: {
       type: Sequelize.STRING,
@@ -56,12 +50,16 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
       allowNull: false,
     },
+    roles: {
+      type: Sequelize.JSON,
+      allowNull: false,
+    },
   });
-  Proprietary.associate = function (models) {
-    Proprietary.hasMany(models.house);
+  User.associate = function (models) {
+    User.hasMany(models.house);
   };
-  Proprietary.associate = function (models) {
-    Proprietary.hasMany(models.announce);
+  User.associate = function (models) {
+    User.hasMany(models.announce);
   };
-  return Proprietary;
+  return User;
 };

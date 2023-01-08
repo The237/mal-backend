@@ -1,7 +1,7 @@
 const { Sequelize, sequelize } = require(".");
 
 module.exports = (sequelize, Sequelize) => {
-  const User_House = sequelize.define("User_House", {
+  const User_House = sequelize.define("user_house", {
     houseId: {
       type: Sequelize.INTEGER,
     },

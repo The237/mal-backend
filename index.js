@@ -2,6 +2,7 @@ const express = require("express");
 const announcesRoutes = require("./routes/announces");
 const housesRoutes = require("./routes/houses");
 const usersRoutes = require("./routes/users");
+const user_housesRoutes = require("./routes/user_house");
 
 // create the database connection and call all models
 const db = require("./models");
@@ -13,6 +14,7 @@ app.use(express.json());
 app.use("/api", announcesRoutes);
 app.use("/api", housesRoutes);
 app.use("/api", usersRoutes);
+app.use("/api/", user_housesRoutes);
 
 app.get("/", (req, res) => {
   res.status(200).json({ message: "Hello World !" });

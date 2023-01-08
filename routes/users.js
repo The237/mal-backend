@@ -64,7 +64,7 @@ users.post("/user/signin", async (req, res) => {
     if (user) {
       return res
         .status(400)
-        .send(`Cet adresse email est déjà utilisée sur ce site ...`);
+        .json(`Cet adresse email est déjà utilisée sur ce site ...`);
     }
     const {
       nom,
@@ -177,7 +177,7 @@ users.put("/user/:id", async (req, res) => {
       { where: { id: req.params.id } }
     );
     user = await usersServices.findByPk(req.params.id);
-    res.status(200).send(user);
+    res.status(200).json(user);
   } catch (error) {
     console.log(error.message);
     res.status(500).json(error.message);
@@ -193,7 +193,10 @@ users.patch("/user/:id", async (req, res) => {
     );
     user = await usersServices.findByPk(req.params.id);
     res.status(200).json(user);
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error.message);
+  }
 });
 users.delete("/user/:id", (req, res) => {});
 

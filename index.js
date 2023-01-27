@@ -3,13 +3,15 @@ const announcesRoutes = require("./routes/announces");
 const housesRoutes = require("./routes/houses");
 const usersRoutes = require("./routes/users");
 const user_housesRoutes = require("./routes/user_house");
+const cors = require("cors");
 
 // create the database connection and call all models
 const db = require("./models");
 
 const app = express();
-const PORT = 3000;
+const PORT = 5000;
 
+app.use(cors());
 app.use(express.json());
 app.use("/api", announcesRoutes);
 app.use("/api", housesRoutes);

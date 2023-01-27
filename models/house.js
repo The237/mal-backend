@@ -96,7 +96,7 @@ module.exports = (sequelize, Sequelize) => {
     deleted: {
       type: Sequelize.BOOLEAN,
       allowNull: false,
-      default: false,
+      defaultValue: false,
     },
   });
   House.associate = function (models) {

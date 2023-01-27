@@ -1,7 +1,5 @@
 const { Sequelize, sequelize } = require(".");
 
-const phoneValidatorRegex = /[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-s./0-9]*$/;
-
 module.exports = (sequelize, Sequelize) => {
   const User = sequelize.define("user", {
     nom: {
@@ -21,8 +19,8 @@ module.exports = (sequelize, Sequelize) => {
       },
     },
     sexe: {
-      type: Sequelize.INTEGER,
-      allowNull: false,
+      type: Sequelize.ENUM("Masculin", "Féminin"),
+      defaultValue: "Masculin",
     },
     telephone: {
       type: Sequelize.STRING,
@@ -50,14 +48,13 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    roles: {
-      type: Sequelize.JSON,
-      allowNull: false,
+    role: {
+      type: Sequelize.ENUM("tenant", "landlord", "admin", "superadmin"),
+      defaultValue: "tenant",
     },
     deleted: {
       type: Sequelize.BOOLEAN,
-      allowNull: false,
-      default: false,
+      defaultValue: false,
     },
   });
   User.associate = function (models) {

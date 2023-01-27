@@ -3,6 +3,8 @@ const { sequelize } = require("../models");
 const users = express.Router();
 const usersServices = sequelize.models["user"];
 const Joi = require("joi");
+const { joiPasswordExtendCore } = require("joi-password");
+const joiPassword = Joi.extend(joiPasswordExtendCore);
 const customJoiJson = require("../consts/customJoiJson");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -17,20 +19,13 @@ users.get("/users", async (req, res) => {
     res.status(500).json(error);
   }
 });
+
 users.post("/user/signin", async (req, res) => {
   const schema = Joi.object({
-    nom: Joi.string().min(3).max(30).required(),
-    prenom: Joi.string().min(3).max(30),
-    sexe: Joi.valid(0, 1).required(),
-    telephone: Joi.string()
-      .pattern(new RegExp("[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-s./0-9]*$"))
-      .messages({
-        "string.pattern.base": `Veuillez saisir un numéro valide`,
-      })
-      .required(),
-    email: Joi.string().email().required(),
-    adresse: Joi.string().required(),
+    email: Joi.string().min(3).max(200).email().required(),
     password: Joi.string()
+      .min(8)
+      .max(200)
       .pattern(new RegExp("^(?=.*d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$"))
       .required()
       .messages({
@@ -40,14 +35,93 @@ users.post("/user/signin", async (req, res) => {
         "string.empty": `Le mot de passe ne peut être vide`,
         "any.required": `Le mot de passe est obligatoire`,
       }),
-    repeatMdp: Joi.string().valid(req.body.repeatMdp).required().messages({
-      "an.only": `Les mots de passe sont differents`,
-      "any.required": `Veuillez de nouveau saisir le mot de passe`,
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
+  try {
+    let user = await usersServices.findOne({
+      where: {
+        email: req.body.email,
+      },
+    });
+
+    if (!user) return res.status(400).json("Invalid email or password ...");
+    const validPassword = await bcrypt.compare(
+      req.body.password,
+      user.password
+    );
+
+    if (!validPassword)
+      return res.status(400).send("Invalid email or password ...");
+
+    const secretKey = process.env.SECRET_KEY;
+    const token = jwt.sign(
+      {
+        id: user.id,
+        nom: user.nom,
+        prenom: user.prenom,
+        sexe: user.sexe,
+        telephone: user.telephone,
+        email: user.email,
+        adresse: user.adresse,
+        role: user.role,
+        deleted: user.deleted,
+      },
+      secretKey
+    );
+    res.status(200).json(token);
+  } catch (error) {
+    res.status(500).json(error.message);
+    console.log(error);
+  }
+});
+
+users.post("/user/signup", async (req, res) => {
+  const schema = Joi.object({
+    nom: Joi.string().min(3).max(30).required().messages({
+      "string.empty": "Le nom ne peut être vide",
+      "string.min": "Le nom doit avoir au moins 3 caractères",
+      "string.max": "Le nom doit avoir maximum 30 caractères",
     }),
-    roles: customJoiJson.array().when("infected", {
-      is: true,
-      then: customJoiJson.array().min(1).required(),
+    prenom: Joi.string().min(0).max(30).messages({
+      "string.max": "Le prénom doit avoir maximum 3 caractères",
     }),
+    sexe: Joi.valid("Masculin", "Féminin"),
+    telephone: Joi.string()
+      .pattern(new RegExp("[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-s./0-9]*$"))
+      .messages({
+        "string.pattern.base": `Veuillez saisir un numéro valide`,
+      })
+      .required(),
+    email: Joi.string().min(3).max(200).email().required(),
+    adresse: Joi.string().required(),
+    password: joiPassword
+      .string()
+      .min(8)
+      .max(200)
+      .minOfSpecialCharacters(1)
+      .minOfLowercase(3)
+      .minOfNumeric(1)
+      .minOfUppercase(1)
+      .noWhiteSpaces()
+      .messages({
+        "password.minOfUppercase":
+          "Le mot de passe doit contenir au moins {#min} lettres majuscules",
+        "password.minOfSpecialCharacters":
+          "Le mot de passe doit contenir au moins {#min} caractères spéciaux (#, @, ...)",
+        "password.minOfLowercase":
+          "Le mot de passe doit contenir au moins {#min} lettres minuscules",
+        "password.minOfNumeric":
+          "Le mot de passe doit contenir au moins {#min} chiffres",
+        "password.noWhiteSpaces":
+          "Le mot de passe ne doit contenir aucun espace",
+      }),
+    repeatMdp: Joi.any().valid(Joi.ref("password")).required().messages({
+      "string.ref":
+        "Le mot de passe et sa confirmation doivent être similaires",
+    }),
+    role: Joi.valid("tenant", "landlord", "admin", "superadmin"),
     deleted: Joi.boolean(),
   });
 
@@ -74,7 +148,7 @@ users.post("/user/signin", async (req, res) => {
       email,
       adresse,
       password,
-      roles,
+      role,
       deleted,
     } = req.body;
     user = {
@@ -85,7 +159,7 @@ users.post("/user/signin", async (req, res) => {
       email: email,
       adresse: adresse,
       password: password,
-      roles: roles,
+      role: role,
       deleted: deleted,
     };
 
@@ -93,7 +167,7 @@ users.post("/user/signin", async (req, res) => {
     user.password = await bcrypt.hash(user.password, salt);
 
     await usersServices.create(user);
-    const secretKey = await process.env.SECRET_KEY;
+    const secretKey = process.env.SECRET_KEY;
 
     const token = jwt.sign(
       {
@@ -104,8 +178,8 @@ users.post("/user/signin", async (req, res) => {
         telephone: user.telephone,
         email: user.email,
         adresse: user.adresse,
-        roles: user.roles,
-        deleted: deleted,
+        role: user.role,
+        deleted: user.deleted,
       },
       secretKey
     );
@@ -138,7 +212,7 @@ users.put("/user/:id", async (req, res) => {
       .required(),
     email: Joi.string().email().required(),
     adresse: Joi.string().required(),
-    roles: customJoiJson.array().when("infected", {
+    role: customJoiJson.array().when("infected", {
       is: true,
       then: customJoiJson.array().min(1).required(),
     }),
@@ -158,7 +232,7 @@ users.put("/user/:id", async (req, res) => {
       email,
       adresse,
       password,
-      roles,
+      role,
       deleted,
     } = req.body;
 
@@ -171,7 +245,7 @@ users.put("/user/:id", async (req, res) => {
         email: email,
         adresse: adresse,
         password: password,
-        roles: roles,
+        role: role,
         deleted: deleted,
       },
       { where: { id: req.params.id } }

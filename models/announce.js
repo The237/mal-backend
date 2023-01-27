@@ -3,7 +3,7 @@ module.exports = (sequelize, Sequelize) => {
     status: {
       type: Sequelize.BOOLEAN,
       allowNull: false,
-      default: true,
+      defaultValue: true,
     },
   });
   Announce.associate = function (models) {
